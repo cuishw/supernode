@@ -8,11 +8,11 @@ all: nvidia muxi
 nvidia: gpu_mem_bw_cuda
 muxi: gpu_mem_bw_mxgpu_mc
 
-gpu_mem_bw_cuda: gpu_mem_bw_cuda.cpp
+gpu_mem_bw_cuda: gpu_mem_bw_unified.cu
 	$(NVCC) $(NVCCFLAGS) -o $@ $<
 
-gpu_mem_bw_mxgpu_mc: gpu_mem_bw_mxgpu_mc.cu
-	$(MXCC) $(MXCCFLAGS) -o $@ $<
+gpu_mem_bw_mxgpu_mc: gpu_mem_bw_unified.cu
+	$(MXCC) $(MXCCFLAGS) -DUSE_MXGPU -o $@ $<
 
 clean:
 	rm -f gpu_mem_bw_cuda gpu_mem_bw_mxgpu_mc

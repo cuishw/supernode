@@ -1,27 +1,31 @@
-# GPU 内存读写带宽测试
+# GPU 内存读写带宽测试（统一源码）
 
-包含两个程序，**逻辑保持一致**：
+现在只保留一个源码文件：`gpu_mem_bw_unified.cu`。
 
-- `gpu_mem_bw_cuda.cpp`：NVIDIA CUDA 版本
-- `gpu_mem_bw_mxgpu_mc.cu`：沐曦 MC Runtime 版本（把 NVIDIA 接口替换为沐曦接口）
+- 默认按 **NVIDIA 接口** 编译/调用。
+- 在沐曦上通过 `-DUSE_MXGPU` 宏把接口重定向到 `mc_runtime` 对应接口。
 
-两者都测试：
-- 匿名 `mmap` 内存
-- 字符设备 `mmap` 内存（可选）
-- 输出 H2D / D2H / D2D 带宽
-
-## NVIDIA
+## 编译
 
 ```bash
-make nvidia
+make nvidia   # 生成 gpu_mem_bw_cuda
+make muxi     # 生成 gpu_mem_bw_mxgpu_mc（启用 -DUSE_MXGPU）
+```
+
+## 运行
+
+```bash
 ./gpu_mem_bw_cuda --bytes 268435456 --iters 30 --device 0
-./gpu_mem_bw_cuda --bytes 268435456 --iters 30 --device 0 --char-dev /dev/your_char_device --offset 0
+./gpu_mem_bw_mxgpu_mc --bytes 268435456 --iters 30 --device 0
 ```
 
-## 沐曦
+可选字符设备 mmap：
 
 ```bash
-make muxi
-./gpu_mem_bw_mxgpu_mc --bytes 268435456 --iters 30 --device 0
-./gpu_mem_bw_mxgpu_mc --bytes 268435456 --iters 30 --device 0 --char-dev /dev/your_char_device --offset 0
+--char-dev /dev/your_char_device --offset 0
 ```
+
+## 注册 flag
+
+- 匿名 mmap：IoMemory flag
+- 字符设备 mmap：Default flag
