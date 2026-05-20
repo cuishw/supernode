@@ -1,50 +1,27 @@
-# NVIDIA GPU 内存读写带宽测试（CUDA）
+# GPU 内存读写带宽测试
 
-这是一个**先在 NVIDIA GPU 上运行**的测试程序，用于比较两种 `mmap` 来源内存的带宽：
+包含两个程序，**逻辑保持一致**：
 
-1. 匿名 `mmap`（`MAP_ANONYMOUS`）
-2. 字符设备 `mmap`（`--char-dev /dev/xxx`）
+- `gpu_mem_bw_cuda.cpp`：NVIDIA CUDA 版本
+- `gpu_mem_bw_mxgpu_mc.cu`：沐曦 MC Runtime 版本（把 NVIDIA 接口替换为沐曦接口）
 
-输出三项带宽：
+两者都测试：
+- 匿名 `mmap` 内存
+- 字符设备 `mmap` 内存（可选）
+- 输出 H2D / D2H / D2D 带宽
 
-- H2D（Host -> Device）
-- D2H（Device -> Host）
-- D2D（Device -> Device）
-
-## 编译
-
-```bash
-make
-```
-
-## 运行示例
-
-### 仅测试匿名 mmap
+## NVIDIA
 
 ```bash
+make nvidia
 ./gpu_mem_bw_cuda --bytes 268435456 --iters 30 --device 0
+./gpu_mem_bw_cuda --bytes 268435456 --iters 30 --device 0 --char-dev /dev/your_char_device --offset 0
 ```
 
-### 同时测试字符设备 mmap
+## 沐曦
 
 ```bash
-./gpu_mem_bw_cuda \
-  --bytes 268435456 \
-  --iters 30 \
-  --device 0 \
-  --char-dev /dev/your_char_device \
-  --offset 0
+make muxi
+./gpu_mem_bw_mxgpu_mc --bytes 268435456 --iters 30 --device 0
+./gpu_mem_bw_mxgpu_mc --bytes 268435456 --iters 30 --device 0 --char-dev /dev/your_char_device --offset 0
 ```
-
-## 参数说明
-
-- `--bytes`：每轮传输字节数（默认 `256 MiB`）
-- `--iters`：迭代次数（默认 `30`）
-- `--device`：NVIDIA GPU 索引（默认 `0`）
-- `--char-dev`：字符设备路径（不传则跳过字符设备测试）
-- `--offset`：字符设备映射偏移（默认 `0`）
-
-## 备注
-
-- 该版本仅面向 NVIDIA/CUDA 环境。
-- 字符设备测试要求设备支持 `mmap`，并满足驱动对长度/偏移（通常页对齐）的要求。
